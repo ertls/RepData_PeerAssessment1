@@ -6,7 +6,8 @@ output: html_document
 
 Just setting the environment
 
-```{r}
+
+```r
 setwd("C:/Users/ertls/courses/Reproducible_Research")
 library(lattice)
 ```
@@ -14,7 +15,8 @@ library(lattice)
     
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 activity <- read.csv("activity.csv")
 ```
 
@@ -22,47 +24,62 @@ activity <- read.csv("activity.csv")
 ## What is mean total number of steps taken per day?
     
 Calculate and show a histogram of the number of steps taken per day. (NAs not removed, therefore equal to zero steps when calculating the sum.)
-```{r}
+
+```r
 steps_per_day <- tapply(activity$steps, activity$date, sum, na.rm = TRUE)
 hist(steps_per_day, 20, main = "Total number of steps taken per day",
      xlab = "Steps", density = 15)
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 Summary (including the mean and the median) of the total number of steps per taken day.
-```{r}
+
+```r
 summary(steps_per_day)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10400    9354   12810   21190
 ```
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 each_day <- tapply(activity$steps, activity$interval, mean, na.rm = TRUE)
 plot(each_day, type = "l",
      main = "Steps taken, averaged across all days",
      xlab = "Time in 5 minute intervalls", ylab = "Steps")
 ```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
 The 5-minute intervall with the maximum number of steps:
 
-```{r}
+
+```r
 steps_max <- which(each_day == max(each_day))
 ```
-`r steps_max[[1]]`th 5 minute intervall  
-`r names(steps_max)` (abc) a hours bc minutes
+104th 5 minute intervall  
+835 (abc) a hours bc minutes
 
 
 ## Imputing missing values
 
-```{r}
+
+```r
 steps_na <- sum(is.na(activity$steps))
 length_steps <- length(activity$steps)
 ```
 
-There are `r steps_na` missing values out of a total of `r length_steps` values in the dataset (`r round(steps_na/length_steps * 100)` %).
+There are 2304 missing values out of a total of 17568 values in the dataset (13 %).
 
 The following code segment calculates the median of each time interval and stores it in the column activity$median.
-```{r}
+
+```r
 for (i in 1:288) {
     n_row <- integer(61)
     for (j in 1:61) n_row[j] <- (j-1)*288 + i
@@ -72,14 +89,16 @@ for (i in 1:288) {
 ```
 
 Now I create a new dataset without missing values. Instead of the missing values there are now the medians of the respective time intervall.
-```{r}
+
+```r
 activity_median_for_na <- activity
 activity_median_for_na$steps[is.na(activity$steps)] <-
     activity$median[is.na(activity$steps)]
 ```
 
 Calculate and show a histogram the number of steps taken per day (this time with NAs removed).
-```{r}
+
+```r
 steps_per_day_na_removed <- tapply(activity_median_for_na$steps,
                                    activity$date, sum,
                         na.rm = TRUE)
@@ -88,14 +107,28 @@ hist(steps_per_day_na_removed, 20,
      xlab = "Steps", density = 15)
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+
 Summary (including the mean and the median) of the total number of steps per taken day (NAs removed).
-```{r}
+
+```r
 summary(steps_per_day_na_removed)
 ```
 
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    6778   10400    9504   12810   21190
+```
+
 The summary from above with NA present, to compare:
-```{r}
+
+```r
 summary(steps_per_day)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10400    9354   12810   21190
 ```
 
 Without missing values (substituted as described above) the minimum number of steps taken per day is increased and the mean is slightly smaller.
@@ -103,7 +136,8 @@ Without missing values (substituted as described above) the minimum number of st
 ## Are there differences in activity patterns between weekdays and weekends?
 
 New factor variable Weekday/Weekend:
-```{r}
+
+```r
 activity_median_for_na$day <- factor("weekday",
                                      levels = c("weekday", "weekend"))
 weekend <- (weekdays(as.Date(activity_median_for_na$date,
@@ -114,7 +148,8 @@ activity_median_for_na$day[weekend] <- "weekend"
 ```
 
 Calculating the mean steps at each time interval for weekdays and weekends.
-```{r}
+
+```r
 each_day <- tapply(activity_median_for_na$steps,
                    list(activity_median_for_na$interval,
                    activity_median_for_na$day), mean, na.rm = TRUE)
@@ -129,4 +164,6 @@ names(neach_day) <- c("steps", "day", "interval", "minutes")
 xyplot(steps ~ minutes | day, data = neach_day, layout = c(1,2), type = "l",
        main = "Mean steps of each time interval respective of weekday")
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
